@@ -1,0 +1,15 @@
+{
+  "name": "parse-esp-example-scripts",
+  "version": "1.0.0",
+  "description": "Some Node.js scripts to help setup example Parse objects",
+  "main": "index.js",
+  "dependencies": {
+    "parse": "^2.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

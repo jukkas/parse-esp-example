@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ESP device control</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://npmcdn.com/parse/dist/parse.min.js"></script>
+    <style>
+        h1 {
+           text-align:center;
+        }
+        .right {
+            float: right;
+        }
+        .light  {
+            position: relative;
+            margin: auto;
+            width: 100px;
+            height: 100px;
+        }
+        .light-item {
+            display: inline-block;
+            border: 2px solid black;
+        }
+        .light-item:hover {
+            border-radius: 5px;
+            border-color: gray;
+        }
+        .light-item:active {
+            border-radius: 10px;
+            border-color: black;
+        }
+        .debug {
+            font-family: monospace;
+        }
+        .small-print {
+            text-align: right;
+            margin-top: 100px;
+            font-size: 50%;
+        }
+
+    </style>
+</head>
+<body>
+  <div id="app">
+    <nav id="nav">
+        <span class="right">
+            <span v-if="!user">
+                <input type="text" v-model="username" placeholder="Username">
+                <input type="password" v-model="password" placeholder="Password">
+                <button @click="login()">Login</button>
+            </span>
+            <span v-else>
+                {{ user.getUsername() }} <button @click="logout()">Logout</button>
+            </span>
+        </span>
+    </nav>
+        
+    <h1>ESP device control using Parse</h1>
+    <div v-if="user">
+    <div class="light">
+        <div class="light-item">
+            <img v-if="light" style="background-color: lightgreen" @click="toggleLight" src="https://png.icons8.com/dotty/80/000000/light-on.png">
+            <img v-else @click="toggleLight" src="https://png.icons8.com/dotty/80/000000/light-off.png">
+        </div>
+    </div>
+    <div @click="toggleOnline" class="online"> 
+        <span :style="online ? 'background-color: lightgreen' : 'background-color: lightgray'">
+            {{ online ? 'Online':'Offline'}}
+        </span>
+    </div>
+    </div>
+    <div class="debug">{{ message }}</div>
+  </div>
+  <div class="small-print"><a href="https://icons8.com">Icon pack by Icons8</a></div>
+  <script>
+    Parse.initialize('YOUR-PARSE-APPLICATION-ID', // Change these
+                     'YOUR-PARSE-JS-API-KEY'); // JS-key only needed if Parse server version < 3
+    Parse.serverURL = 'https://parseapi.back4app.com/'; // Change this
+    Parse.liveQueryServerURL = 'wss://YOURWSSERVER.back4app.io'; // Change/remove this. Needed only if different from main server
+    var app = new Vue({
+        el: '#app',
+        data: {
+            message: 'Starting...',
+            light: false,
+            online: false,
+            user: null,
+            username: null,
+            password: null,
+        },
+        created() {
+            this.parseObject = null;
+            this.user = Parse.User.current();
+            this.initDeviceStatus();
+            if (this.user) {
+                //this.initdevice();
+            }
+        },
+        methods: {
+            initDeviceStatus() {
+                let Devices = Parse.Object.extend("Devices");
+                let query = new Parse.Query(Devices);
+                query.equalTo("name", "device1");
+                query.first()
+                .then(device => {
+                    if (device) {
+                        this.message = `Got device ${device.id} online: ${device.get('online')} light: ${device.get('light')}`;
+                        this.online = device.get('online');
+                        this.light = device.get('light');
+                    } else {
+                        this.message = 'Created new device: device1';
+                        device = new devices();
+                        device.set('name', 'device1');
+                        device.set('online', false);
+                        device.set('light', false);
+                    }
+                    return device.save();
+                })
+                .then(device => {
+                    this.parseObject = device;
+                    console.log('Updated/initialised device');
+                })
+                .catch(err=>console.log(err));
+
+
+                let subscription = query.subscribe();
+                subscription.on('update', (device) => {
+                    console.log('device status updated');
+
+                    this.message = `Updated ${device.id} name:${device.get('name')} online: ${device.get('online')} 
+                                    light: ${device.get('light')}
+                                    `;
+                    this.online = device.get('online');
+                    this.light = device.get('light');
+                    this.parseObject = device;
+
+                });
+            },
+            toggleLight() {
+                if (!this.parseObject) {
+                    console.log('Error: no parseObject');
+                    return;
+                }
+                this.parseObject.set('light', !this.light);
+                this.parseObject.save()
+                .then(() =>{
+                    console.log('Light state set');
+                })
+                .catch(err=>console.log(err));
+            },
+            toggleOnline() {
+                if (!this.parseObject) {
+                    console.log('Error: no parseObject');
+                    return;
+                }
+                this.parseObject.set('online', !this.online);
+                this.parseObject.save()
+                .then(() =>{
+                    console.log('Light online state set');
+                })
+                .catch(err=>console.log(err));
+            },
+            login() {
+                if (!this.username || !this.password)
+                    return;
+                Parse.User.logIn(this.username, this.password)
+                .then(user => {
+                    console.log('logged in', user);
+                    this.user = user;
+                    //this.initLock();
+                })
+                .catch(err => console.log(err));
+            },
+            async logout() {
+                this.user = null;
+                await Parse.User.logOut();
+            },
+        },
+    });
+  </script>
+</body>
+</html>
