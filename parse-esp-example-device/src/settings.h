@@ -7,5 +7,5 @@ const char* streamServer = "YOURWSSERVER.back4app.io";  // LiveQuery websocket s
 const char* streamPath = "/"; // default is parsePath
 
 static const char applicationId[] PROGMEM = "YOUR-PARSE-APPLICATION-ID";
-static const char restApiKey[] PROGMEM = "YOUR-PARSE-REST-API-KEY"; // Only needed if Parse version < 3. For set and get
-static const char javascriptApiKey[] PROGMEM = "YOUR-PARSE-JS-API-KEY"; // Only needed if Parse version < 3. For LiveQuery stream
+static const char restApiKey[] PROGMEM = "YOUR-PARSE-REST-API-KEY"; // Only needed with Back4app or old versions. For set and get
+static const char javascriptApiKey[] PROGMEM = "YOUR-PARSE-JS-API-KEY"; // Only needed with Back4app or old versions. For LiveQuery stream

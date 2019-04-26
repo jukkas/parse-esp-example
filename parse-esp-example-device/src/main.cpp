@@ -61,8 +61,8 @@ static char objectPath[8+11+5] = {0}; // Full Object path, that will be queried 
 // Set Object key "online" to true 
 static void setOnline() {
     if (objectPath[0]) {
-        //Serial.print("Setting device online. objectpath:");
-        //Serial.println(objectPath);
+        Serial.print("Setting device online. objectpath:");
+        Serial.println(objectPath);
         parse.set(objectPath,"{\"online\":true}");
     }
     // --- or if you wnt to hard code object path, 
@@ -86,8 +86,8 @@ void setup() {
     //Serial.println(ESP.getChipId());  // TODO: Could use this ID as device name in server
 
     parse.setApplicationId(applicationId); // Required
-    parse.setRestApiKey(restApiKey); // ONLY needed in old version (<3) of Parse-server // For set and get
-    parse.setJavascriptApiKey(javascriptApiKey); // ONLY needed in old version (<3) of Parse-server // For stream
+    parse.setRestApiKey(restApiKey); // Only needed with Back4app or old versions (<3) of Parse-server // For set and get
+    parse.setJavascriptApiKey(javascriptApiKey); // Only needed with Back4app or old versions (<3) of Parse-server // For stream
 
     const char *resp;
     
@@ -96,6 +96,7 @@ void setup() {
        Read if EEPROM contains the session token, if not then try logging in using username and password
        ("device1" and "demo")
     */
+#if 1
     EEPROM.begin(512);
     if (EEPROM.read(STADDR) == 0xA1 && 
             EEPROM.read(STADDR+1) == 0xA3 && 
@@ -127,7 +128,7 @@ void setup() {
     EEPROM.end();
     // ... or just use hardcoded session token: 
     // parse.setSessionToken("r:8e7b1900856910ccb02b2b08ac89ea75");
- 
+#endif
 
     // Query server for "Devices" Object with name "device1".
     // parse.get parameters: Class/object path and query (as defined in REST API)
@@ -136,7 +137,12 @@ void setup() {
     //resp = parse.get("Devices/dzEli8kFvF");
 
     // Some error handling...
+    if (hasErrorResp(resp, 403)) {  // "unauthorized"
+        Serial.println("parse.get Devices failed: unauthorized");
+        // TODO: reboot?
+    }
     if (hasErrorResp(resp, 209)) {  // "Invalid session token"
+        Serial.print("Invalid session token");
         clearTokenFromEeprom();
         // TODO: reboot?
     }

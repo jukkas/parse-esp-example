@@ -12,7 +12,7 @@
 static char _buffer[1024] = {0};
 static WebSocketsClient *ws = nullptr;
 static int (*_subscrCb)(const char *data) = nullptr;
-static const char *_streamQuery = nullptr;
+static char _streamQuery[128] = {0};
 static const char *_applicationId = nullptr;
 static const char *_sessionToken = nullptr;
 static const char *_restApiKey = nullptr;
@@ -52,8 +52,12 @@ void ParseEsp::loop(void) {
 
 static int transaction(const char *hostname, const char *request) {
     WiFiClientSecure client;
+#ifdef wificlientbearssl_h
+    client.setInsecure();
+#endif
     if (!client.connect(hostname, 443)) {
-        Serial.print("https connection failed");
+        Serial.print("https connection failed:");
+        Serial.println(hostname);
         return -1;
     }
     client.print(_buffer);
@@ -176,6 +180,15 @@ char* ParseEsp::get(const char *object, const char *query) {
     return _buffer;
 }
 
+char* ParseEsp::post(const char *className, const char *objectJson) {
+    Serial.println("ParseEsp::post");
+    char *req = createHttpRequest(host, "POST", parsePath, className, objectJson);
+    //Serial.println(req);
+    transaction(host, req);
+    return _buffer;
+}
+
+
 const char* ParseEsp::login(const char *username, const char *password) {
     Serial.println("ParseEsp::login");
     char usernameParam[40];
@@ -242,7 +255,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 int ParseEsp::connectStream(const char *subscr, int (*subscrCb)(const char *data),
                             const char *server, const char *path) {
     _subscrCb = subscrCb;
-    _streamQuery = subscr;
+    strncpy(_streamQuery, subscr, sizeof(_streamQuery)-1); // Save live query
 
     webSocket.beginSSL(server ? server:host, 443, path ? path:parsePath);
     webSocket.onEvent(webSocketEvent);

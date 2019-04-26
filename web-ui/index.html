@@ -99,7 +99,7 @@
             }
         },
         methods: {
-            initDeviceStatus() {
+            async initDeviceStatus() {
                 let Devices = Parse.Object.extend("Devices");
                 let query = new Parse.Query(Devices);
                 query.equalTo("name", "device1");
@@ -125,7 +125,7 @@
                 .catch(err=>console.log(err));
 
 
-                let subscription = query.subscribe();
+                let subscription = await query.subscribe();
                 subscription.on('update', (device) => {
                     console.log('device status updated');
 

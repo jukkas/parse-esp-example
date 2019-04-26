@@ -15,6 +15,7 @@ class ParseEsp {
                           const char *server = nullptr, const char *path = nullptr);
         int set(const char *object, const char *data);
         char* get(const char *object, const char *query=nullptr);
+        char* post(const char *className, const char *objectJson=nullptr);
         void loop();
         const char* getSessionToken();
         const char* login(const char *username, const char *password);

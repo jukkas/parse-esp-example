@@ -1,7 +1,7 @@
 const Parse = require('parse/node');
 
 Parse.initialize('YOUR-APPLICATION_ID-HERE',  // Change this. Application ID
-                 'YOUR-PARSE-JS-API-KEY', // Set as '' if Parse server >= 3
+                 'YOUR-PARSE-JS-API-KEY', // Back4app seems to want this. Set as '' if using self-hosted Parse server >= 3
                  'YOUR-MASTER_KEY-HERE'); // Master key
 Parse.serverURL = 'https://parseapi.back4app.com/'; // Change this. Parse server address
 
