@@ -13,6 +13,7 @@ class ParseEsp {
         void setJavascriptApiKey(const char *key);
         int connectStream(const char *subscr, int (*subscrCb)(const char *data), 
                           const char *server = nullptr, const char *path = nullptr);
+        void disconnectStream();
         int set(const char *object, const char *data);
         char* get(const char *object, const char *query=nullptr);
         char* post(const char *className, const char *objectJson=nullptr);

@@ -70,6 +70,9 @@ static void setOnline() {
 
 }
 
+// Forward declaration
+void connectStream();
+
 void setup() {
     Serial.begin(115200);
     pinMode(OutputPin, OUTPUT);
@@ -159,6 +162,10 @@ void setup() {
         setOnline();
     }
 
+    connectStream();
+}
+
+void connectStream() {
     // LiveQuery stream query setup
     // See https://github.com/parse-community/parse-server/wiki/Parse-LiveQuery-Protocol-Specification
     parse.connectStream("{\"className\":\"Devices\",\"where\":{\"name\":\"device1\"}}", liveQueryCb,
@@ -167,9 +174,21 @@ void setup() {
 
 void loop() {
     parse.loop(); // For live query
+
     // In case control system/UI turned "online" false, lets turn it back true
     if (shouldSetOnline) {
         shouldSetOnline = false;
+#ifdef ESP8266
+        /*
+            ESP8266 does not seem to like have more than one connection
+            (crashes if attempted). So do this ugly disconnect/connect stream botch.
+            We may lose changes happening to object of interest while this happens. Sad.
+        */
+        parse.disconnectStream();
+#endif
         setOnline();
+#ifdef ESP8266
+        connectStream();
+#endif
     }
 }

@@ -262,6 +262,10 @@ int ParseEsp::connectStream(const char *subscr, int (*subscrCb)(const char *data
     return 1;
 }
 
+void ParseEsp::disconnectStream() {
+    ws->disconnect();
+}
+
 /************* JSON parsing routines ******************/
 static const char* findKey(const char* json, const char *key) {
     int keyLen = strlen(key);
