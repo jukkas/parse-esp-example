@@ -14,7 +14,7 @@ ParseEsp parse(parseHost, parsePath);
 #ifdef LED_BUILTIN
 const int OutputPin = LED_BUILTIN; // ESP8266 D1 Mini
 #else
-const int OutputPin = 32; // ESP32 dev board without build in LED, connect LED+R b/w 3.3v and PIN32
+const int OutputPin = 22; // ESP32 dev board without build in LED, connect LED+R b/w 3.3v and PIN
 #endif
 static bool outputState = HIGH; // Light/LED is off when GPIO high 
 

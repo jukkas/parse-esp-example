@@ -1,4 +1,4 @@
-.pioenvs
-.piolibdeps
+.pio
 .vscode
 node_modules
+parse-esp-example-device/.gitignore

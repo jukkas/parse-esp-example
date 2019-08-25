@@ -1,8 +1,8 @@
 #ifndef PARSE_ESP_H_
 #define PARSE_ESP_H_
 
-#include <WebSocketsClient.h>
 #include <WiFiClientSecure.h>
+#include "fwsc.h"
 
 class ParseEsp {
     public:
@@ -25,9 +25,7 @@ class ParseEsp {
         const char *host;
         const char *parsePath;
         WiFiClientSecure client;
-        WebSocketsClient webSocket;
-        //void webSocketEvent(WStype_t type, uint8_t * payload, size_t length);
-        //int (*_subscrCb)(const char *data);
+        Fwsc ws;
 };
 
 /* Very limited JSON parsing routines */

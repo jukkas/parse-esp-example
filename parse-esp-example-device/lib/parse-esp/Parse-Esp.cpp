@@ -4,13 +4,12 @@
 /* #else   -- or #ifdef ESP32
    #include <Wifi.h> 
 ?? */
-#include <WebSocketsClient.h>
+#include "fwsc.h"
 #include <WiFiClientSecure.h>
 
 #include "Parse-Esp.hpp"
 
 static char _buffer[1024] = {0};
-static WebSocketsClient *ws = nullptr;
 static int (*_subscrCb)(const char *data) = nullptr;
 static char _streamQuery[128] = {0};
 static const char *_applicationId = nullptr;
@@ -22,7 +21,6 @@ static const char *_javascriptApiKey = nullptr;
 ParseEsp::ParseEsp(const char *host_i, const char *parsePath_i) {
     host = host_i;
     parsePath = parsePath_i;
-    ws = &webSocket;
 }
 
 void ParseEsp::setApplicationId(const char *appId) {
@@ -47,7 +45,7 @@ void ParseEsp::setJavascriptApiKey(const char *key) {
 }
 
 void ParseEsp::loop(void) {
-    webSocket.loop();
+    ws.loop();
 }
 
 static int transaction(const char *hostname, const char *request) {
@@ -204,10 +202,22 @@ const char* ParseEsp::login(const char *username, const char *password) {
     return _buffer;
 }
 
-void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 
-    switch(type) {
-        case WStype_CONNECTED:
+int ParseEsp::connectStream(const char *subscr, int (*subscrCb)(const char *data),
+                            const char *server, const char *path) {
+    _subscrCb = subscrCb;
+    strncpy(_streamQuery, subscr, sizeof(_streamQuery)-1); // Save live query
+
+    auto cb = [&](WSEvent type, uint8_t * payload) {
+        switch (type)
+        {
+        case WSEvent::error:
+            Serial.println("Websocket error");
+            break;
+        case WSEvent::disconnected:
+            Serial.println("Websocket disconnected");
+            break;
+        case WSEvent::connected:
             {
                 Serial.println("Websocket connected");
                 // Send "connect" command
@@ -225,45 +235,33 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
                     strcat(_buffer, "\"");
                 }
                 strcat(_buffer, "}");
-                ws->sendTXT(_buffer);
+                ws.sendtxt(_buffer);
             }
             break;
-        case WStype_TEXT:
+        case WSEvent::text:
             Serial.print("< From Websocket: ");
             Serial.println((const char *)payload);
             if (!strncmp_P((const char *)payload, PSTR("{\"op\":\"connected\""),17)) {
                 strcpy_P(_buffer, PSTR("{\"op\":\"subscribe\",\"requestId\":1,\"query\":"));
                 strcat(_buffer, _streamQuery);
                 strcat(_buffer, "}");
-                ws->sendTXT(_buffer);
+                ws.sendtxt(_buffer);
             } else if (!strncmp_P((const char *)payload, PSTR("{\"op\":\"update\""),14)) {
                 if (_subscrCb) _subscrCb((const char *)payload);
             }
             break;
-        case WStype_DISCONNECTED:
-                Serial.println("Websocket disconnected");
-                ws->setReconnectInterval(60000);
-                break;
-        case WStype_ERROR:
-            Serial.println("Websocket error");
-            break;
         default:
+            Serial.printf_P(PSTR("WS Got unimplemented\n"));
             break;
-    }
-}
-
-int ParseEsp::connectStream(const char *subscr, int (*subscrCb)(const char *data),
-                            const char *server, const char *path) {
-    _subscrCb = subscrCb;
-    strncpy(_streamQuery, subscr, sizeof(_streamQuery)-1); // Save live query
-
-    webSocket.beginSSL(server ? server:host, 443, path ? path:parsePath);
-    webSocket.onEvent(webSocketEvent);
+        }
+    };
+    ws.setCallback(cb);
+    ws.connect(server ? server:host, 443, path ? path:parsePath);
     return 1;
 }
 
 void ParseEsp::disconnectStream() {
-    ws->disconnect();
+    ws.disconnect();
 }
 
 /************* JSON parsing routines ******************/
