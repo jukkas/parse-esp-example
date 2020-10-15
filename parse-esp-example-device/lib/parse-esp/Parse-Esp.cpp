@@ -54,8 +54,7 @@ static int transaction(const char *hostname, const char *request) {
     client.setInsecure();
 #endif
     if (!client.connect(hostname, 443)) {
-        Serial.print("https connection failed:");
-        Serial.println(hostname);
+        Serial.printf_P(PSTR("HTTPS connection to %s failed\n"), hostname);
         return -1;
     }
     client.print(_buffer);
@@ -66,8 +65,7 @@ static int transaction(const char *hostname, const char *request) {
         _buffer[len] = '\0';
         if (!strncmp_P(_buffer, PSTR("HTTP/1.1"), 8)) {
             statusCode = atoi(_buffer+9);
-            Serial.print("< Response status: ");
-            Serial.println(statusCode);
+            Serial.printf_P(PSTR("< Response status: %d\n"), statusCode);
         }
         if (!strncmp_P(_buffer, PSTR("Content-Length: "), 16)) {
             contentLen = atoi(_buffer+16);
@@ -235,6 +233,8 @@ int ParseEsp::connectStream(const char *subscr, int (*subscrCb)(const char *data
                     strcat(_buffer, "\"");
                 }
                 strcat(_buffer, "}");
+                Serial.printf_P(PSTR("> Sending:"));
+                Serial.println(_buffer);
                 ws.sendtxt(_buffer);
             }
             break;
@@ -245,6 +245,8 @@ int ParseEsp::connectStream(const char *subscr, int (*subscrCb)(const char *data
                 strcpy_P(_buffer, PSTR("{\"op\":\"subscribe\",\"requestId\":1,\"query\":"));
                 strcat(_buffer, _streamQuery);
                 strcat(_buffer, "}");
+                Serial.printf_P(PSTR("> Sending:"));
+                Serial.println(_buffer);
                 ws.sendtxt(_buffer);
             } else if (!strncmp_P((const char *)payload, PSTR("{\"op\":\"update\""),14)) {
                 if (_subscrCb) _subscrCb((const char *)payload);
@@ -299,6 +301,7 @@ char* parseText(const char* json, const char *key) {
     const char *end = strchr(p+keyLen+3, '"');
     if (!end) return NULL;
     strncpy(buf, p+keyLen+3, end-(p+keyLen+3));
+    buf[end-(p+keyLen+3)] = '\0';
     buf[40]='\0';
 
     return buf;

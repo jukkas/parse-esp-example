@@ -4,7 +4,7 @@
   "description": "Some Node.js scripts to help setup example Parse objects",
   "main": "index.js",
   "dependencies": {
-    "parse": "^2.1.0"
+    "parse": "^2.17.0"
   },
   "devDependencies": {},
   "scripts": {

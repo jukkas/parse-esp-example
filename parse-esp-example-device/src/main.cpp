@@ -97,7 +97,7 @@ void setup() {
     /* 
        Session token is stored in EEPROM.
        Read if EEPROM contains the session token, if not then try logging in using username and password
-       ("device1" and "demo")
+       ("device1" and "demo") TODO/FIXME: provision these properly somehow...
     */
 #if 1
     EEPROM.begin(512);
@@ -111,11 +111,12 @@ void setup() {
         Serial.println(sessionTokenBuf);
         parse.setSessionToken(sessionTokenBuf);
     } else {
-        resp = parse.login("device1", "demo");
+        resp = parse.login("device1", "demo"); // TODO/FIXME: put these into settings/provisioning!!!
         const char *sessionToken = parseText(resp, "sessionToken");
         Serial.println(sessionToken ? sessionToken : "????");
         if (!sessionToken) { // Login failed
             EEPROM.write(STADDR, 0);
+            Serial.printf_P(PSTR("Error: login failed\n"));
         } else { // Login success. Write Session Token to EEPROM
             EEPROM.write(STADDR, 0xA1); 
             EEPROM.write(STADDR+1, 0xA3); 

@@ -19,6 +19,7 @@
             margin: auto;
             width: 100px;
             height: 100px;
+            cursor: pointer;
         }
         .light-item {
             display: inline-block;
@@ -35,10 +36,12 @@
         .debug {
             font-family: monospace;
         }
-        .small-print {
-            text-align: right;
-            margin-top: 100px;
-            font-size: 50%;
+        img {
+            height: 100px;
+            width: 100px;
+        }
+        .online {
+            cursor: pointer;
         }
 
     </style>
@@ -59,11 +62,10 @@
     </nav>
         
     <h1>ESP device control using Parse</h1>
-    <div v-if="user">
     <div class="light">
         <div class="light-item">
-            <img v-if="light" style="background-color: lightgreen" @click="toggleLight" src="https://png.icons8.com/dotty/80/000000/light-on.png">
-            <img v-else @click="toggleLight" src="https://png.icons8.com/dotty/80/000000/light-off.png">
+            <img v-if="light" style="background-color: lightgreen" @click="toggleLight" src="Lightbulb-On.svg">
+            <img v-else @click="toggleLight" src="Lightbulb-Off.svg">
         </div>
     </div>
     <div @click="toggleOnline" class="online"> 
@@ -71,15 +73,15 @@
             {{ online ? 'Online':'Offline'}}
         </span>
     </div>
-    </div>
     <div class="debug">{{ message }}</div>
   </div>
-  <div class="small-print"><a href="https://icons8.com">Icon pack by Icons8</a></div>
   <script>
+    /*************************** Server settings **********************************/
     Parse.initialize('YOUR-PARSE-APPLICATION-ID', // Change these
-                     'YOUR-PARSE-JS-API-KEY'); // JS-key only needed if Parse server version < 3
+                     'YOUR-PARSE-JS-API-KEY'); // Needed at back4app, otherwise set as ''
     Parse.serverURL = 'https://parseapi.back4app.com/'; // Change this
-    Parse.liveQueryServerURL = 'wss://YOURWSSERVER.back4app.io'; // Change/remove this. Needed only if different from main server
+    Parse.liveQueryServerURL = 'wss://YOURWSSERVER.back4app.io'; // Change/remove this. Needed only if different from main server (e.g. at back4app)
+
     var app = new Vue({
         el: '#app',
         data: {
@@ -94,9 +96,6 @@
             this.parseObject = null;
             this.user = Parse.User.current();
             this.initDeviceStatus();
-            if (this.user) {
-                //this.initdevice();
-            }
         },
         methods: {
             async initDeviceStatus() {
