@@ -59,12 +59,13 @@ must use Dashboard for that)
 
 ESP code is located in `parse-esp-example-device` folder. It uses Arduino framework.
 
-Code is structured to compile in [PlatformIO](https://platformio.org/) environment.
+Code is structured to compile in [PlatformIO](https://platformio.org/) environment. To compile in Arduino-IDE
+you probably need to modify something, at least manually download Websocket library from https://github.com/jukkas/FeebleESPWSClient.
 
 Kind-of-library /parse-esp/ routines are located in `lib/parse-esp` folder, and example `main.cpp` in `src/`
 folder.
 
-For LiveQuery feature, this project includes very limited Websocket client routines at `lib/FeebleESPWSClient`.
+For LiveQuery feature, this project uses library from https://github.com/jukkas/FeebleESPWSClient
 
 Server address and Parse keys are located in src/settings.h. You must change them to match your server
 settings. (and WiFi credentials)
