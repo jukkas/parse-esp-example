@@ -48,14 +48,13 @@ void ParseEsp::loop(void) {
 
 static int transaction(const char *hostname, const char *request) {
     WiFiClientSecure client;
-#ifdef wificlientbearssl_h
-    client.setInsecure();
-#endif
+    client.setInsecure();  // Do not verify server certificate
+
     if (!client.connect(hostname, 443)) {
         Serial.printf_P(PSTR("HTTPS connection to %s failed\n"), hostname);
         return -1;
     }
-    client.print(_buffer);
+    client.print(request);
     int contentLen = 0;
     int statusCode = 0;
     while (client.connected()) {
